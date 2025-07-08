@@ -1,0 +1,13 @@
+[project]
+name = "commute_helper"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastmcp>=2.10.2",
+    "pydantic>=2.11.7",
+    "python-dotenv>=1.1.1",
+    "requests>=2.32.4",
+    "zoneinfo ; python_full_version < '3.9'",
+]

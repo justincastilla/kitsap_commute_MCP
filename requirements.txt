@@ -1,0 +1,5 @@
+fastmcp
+requests
+pydantic
+python-dotenv
+zoneinfo; python_version<'3.9'
