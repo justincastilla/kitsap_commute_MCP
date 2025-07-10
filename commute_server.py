@@ -271,8 +271,36 @@ def get_there_by(origin, location, event_time, buffer_minutes=10):
     5. Always find 2 options that get you there at least 15 minutes before the event time
     """
 
-@mcp.prompt("plan_a_trip")
-def plan_a_trip():
+
+@mcp.prompt("how_to_plan_a_trip1")
+def plan_a_trip2(origin, destination, event_time):
+    
+    return f"""
+        Find multiple route options from {origin} to {destination}. 
+        This may include ferry and car options.
+        Always return a driving only option. 
+        Using the origin's address {origin}, find the two nearest ferry terminals.
+        Calculate the drive time from the origin address {origin} to each terminal.
+        Find the sailing schedule for each terminal. 
+        Determine the drive time from the destination terminal to the destination address {destination}.
+        Calculate the total time for each option. 
+        This total time should be the time it takes to get to the event location at least 15 minutes before the event time {event_time}.
+        You may give up to two ferry options.
+        All options must never get the user there later than 15 minutes before the event time of  {event_time}.
+        Display the information in a table with columns for: 
+            - Route	
+            - Leave Origin
+            - Drive to Terminal
+            - Ferry Departure
+            - Ferry Crossing
+            - Arrive at Terminal time
+            - Drive to Event
+            - Approx. Arrival at Event
+            - Total Travel Time
+    """    
+
+@mcp.prompt("how_to_plan_a_trip")
+def plan_a_trip2(origin, destination, event_time, event_location):
     """
     Guides the user through planning a trip by collecting their origin, destination, and event time, 
     and evaluates both ferry and car commute options. 
