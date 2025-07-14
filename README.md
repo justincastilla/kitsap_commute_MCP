@@ -19,7 +19,7 @@ cp .env.example .env
 ### 2. Set up the Python environment using uv
 This project uses [uv](https://github.com/astral-sh/uv) for fast, reproducible Python dependency management (see `uv.lock`).
 
-#### a. (Optional) Initialize the uv project (if not already done)
+#### a. Initialize the uv project (if not already done)
 If you are starting from scratch or want to reinitialize:
 ```bash
 uv init
@@ -32,25 +32,14 @@ To install all dependencies as specified in `pyproject.toml`:
 uv sync
 ```
 
-#### c. (Recommended) Start a uv-managed virtual environment
+#### c. Start a uv-managed virtual environment
 To create and activate a virtual environment using uv:
 ```bash
 uv venv .venv
 source .venv/bin/activate
 ```
 
-#### d. (Alternative) Install from requirements.txt
-If you prefer, you can also install from `requirements.txt`:
-- If you don't have uv installed, follow the instructions at https://github.com/astral-sh/uv
-
-### 3. Install dependencies and run the servers
-
-This project uses [uv](https://github.com/astral-sh/uv) for dependency management and running servers. There is **no requirements.txt** file; all dependencies are managed via `pyproject.toml`.
-
-- To install dependencies:
-```bash
-uv sync
-```
+### 3. Start the servers
 
 - To start the commute server **or** Elasticsearch event server (in separate terminals):
 ```bash
