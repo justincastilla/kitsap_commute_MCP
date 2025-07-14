@@ -154,6 +154,76 @@ def bulk_index_events(events):
 
 import json
 
+def search_events(
+    start_time: str = None,
+    end_time: str = None,
+    topic: str = None,
+    title: str = None,
+    location: str = None,
+    description_query: str = None,
+    presenting: bool = None,
+    top_k: int = 10
+) -> dict:
+    """
+    Standalone version of the search_events function for manual testing.
+    """
+    must = []
+    if start_time and end_time:
+        must.append({"range": {"start_time": {"gte": start_time, "lte": end_time}}})
+    if topic:
+        must.append({"match": {"topic": topic}})
+    if title:
+        must.append({"match": {"title": title}})
+    if location:
+        must.append({"match": {"location": location}})
+    if presenting is not None:
+        must.append({"term": {"presenting": presenting}})
+
+    if description_query:
+        retriever = {
+            "rrf": {
+                "retrievers": [
+                    {
+                        "standard": {
+                            "query": {
+                                "multi_match": {
+                                    "query": description_query,
+                                    "fields": ["title", "description", "topic"]
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "knn": {
+                            "field": "description_vector",
+                            "query_vector_builder": {
+                                "text_embedding": {
+                                    "model_id": "e5_event_description",
+                                    "model_text": description_query
+                                }
+                            },
+                            "k": top_k,
+                            "num_candidates": 3 * top_k
+                        }
+                    }
+                ],
+                "rank_window_size": top_k,
+                "rank_constant": 20
+            }
+        }
+        resp = es.search(
+            index=EVENT_INDEX,
+            retriever=retriever,
+            size=top_k,
+            _source={"excludes": ["description_vector"]}
+        )
+    else:
+        query = {"bool": {"must": must}} if must else {"match_all": {}}
+        resp = es.search(index=EVENT_INDEX, query=query, size=top_k, _source={"excludes": ["description_vector"]})
+    events = [hit["_source"] for hit in resp["hits"]["hits"]]
+    return {"events": events}
+
+
 def bulk_add_king_county_events():
     """
     Load king_county_tech_events.json and bulk index all events to the events index.
@@ -168,26 +238,6 @@ def bulk_add_king_county_events():
     except Exception as e:
         print(f"Error loading or indexing king county events: {e}")
 
-
-def hybrid_example():
-    query_text = "AI and machine learning"
-    resp = es.search(
-        index="events",
-        body={
-            "knn": {
-                "field": "description_vector",
-                "query_vector_builder": {
-                    "text_embedding": {
-                        "model_id": ".multilingual-e5-small",
-                        "model_text": query_text
-                    }
-                },
-                "k": 10,
-                "num_candidates": 50
-            }
-        }
-    )
-    return resp
 
 def create_event(
     title: str,
@@ -232,11 +282,18 @@ sample_event = {
 
 
 if __name__ == "__main__":
+    print("Elasticsearch initialization script started.")
     # simulate_pipeline()
-    # To bulk add all King County tech events:
+       
     # create_event_index()
+    
     # bulk_add_king_county_events()
-    # results = hybrid_example()
-    # print(results)
-    result = create_event(**sample_event)
-    print(result)
+    
+    # result = create_event(**sample_event)
+    # print(result)
+    
+    # results = search_events(description_query="crypto strategies")
+    # for result in results["events"]:
+    #     print(result["title"])
+    #     print(result["description"])
+    #     print("---")

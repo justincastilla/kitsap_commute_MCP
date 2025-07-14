@@ -54,19 +54,24 @@ def search_events(
         must.append({"term": {"presenting": presenting}})
 
     if description_query:
-        query = {
-            "bool": {
-                "must": must,
-                "should": [
+        # Prepare the retriever block for hybrid RRF search
+        retriever = {
+            "rrf": {
+                "retrievers": [
                     {
-                        "multi_match": {
-                            "query": description_query,
-                            "fields": ["title", "description", "topic"]
+                        "standard": {
+                            "query": {
+                                "multi_match": {
+                                    "query": description_query,
+                                    "fields": ["title", "description", "topic"]
+                                }
+                            }
                         }
                     },
                     {
                         "knn": {
                             "field": "description_vector",
+                            # You will need to generate the embedding for the query here. For now, use the query_vector_builder if supported, or insert the vector if you have it.
                             "query_vector_builder": {
                                 "text_embedding": {
                                     "model_id": "e5_event_description",
@@ -78,13 +83,19 @@ def search_events(
                         }
                     }
                 ],
-                "minimum_should_match": 1
+                "rank_window_size": top_k,
+                "rank_constant": 20
             }
         }
+        resp = es.search(
+            index=EVENT_INDEX,
+            retriever=retriever,
+            size=top_k,
+            _source={"excludes": ["description_vector"]}
+        )
     else:
         query = {"bool": {"must": must}} if must else {"match_all": {}}
-
-    resp = es.search(index=EVENT_INDEX, query=query, size=top_k, _source={"excludes": ["description_vector"]})
+        resp = es.search(index=EVENT_INDEX, query=query, size=top_k, _source={"excludes": ["description_vector"]})
     events = [hit["_source"] for hit in resp["hits"]["hits"]]
     return {"events": events}
 
