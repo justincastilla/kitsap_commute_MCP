@@ -13,3 +13,4 @@ wheels/
 # Misc
 .DS_Store
 uv.lock
+.windsurf
