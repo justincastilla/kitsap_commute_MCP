@@ -26,7 +26,12 @@ def create_event_index():
             "properties": {
                 "title": {"type": "text"},
                 "description": {"type": "text"},
-                "description_vector": {"type": "dense_vector", "dims": EMBEDDING_DIM, "index": True, "similarity": "cosine"},
+                "description_vector": {
+                    "type": "dense_vector", 
+                    "dims": EMBEDDING_DIM, 
+                    "index": True, 
+                    "similarity": "cosine"
+                },
                 "location": {"type": "text"},
                 "topic": {"type": "keyword"},
                 "start_time": {"type": "date"},
@@ -154,7 +159,9 @@ def bulk_add_king_county_events():
     Load king_county_tech_events.json and bulk index all events to the events index.
     """
     try:
-        with open("king_county_tech_events.json", "r") as f:
+        import os
+        events_path = 'king_county_tech_events.json'
+        with open(events_path, "r") as f:
             events = json.load(f)
         print(f"Loaded {len(events)} events from king_county_tech_events.json.")
         bulk_index_events(events)

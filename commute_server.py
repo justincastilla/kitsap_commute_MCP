@@ -21,7 +21,7 @@ schedule = get_schedule()
 @mcp.resource(
     uri="transit://ferries/schedules/{direction}",
     name="Ferry Schedules",
-    description="Full or filtered ferry schedules from static_ferry_schedules.json. Optionally filter by direction: east, west, kitsap, or king."
+    description="Full or filtered ferry schedules from static_ferry_schedules.json. Optionally filter by direction"
 )
 def fetch_ferry_schedules(direction: str | None = None) -> dict:
     """
@@ -55,7 +55,12 @@ def find_nearby_ferry_terminals(address: str, max_results: int = 3) -> dict:
     Finds the nearest ferry terminals to a given address using a static terminal list and Google Maps Geocoding API.
     Returns a sorted list of the closest terminals with name, address, lat, lng, place_id, and distance_km.
     """
-    from ferry_terminals import terminals
+    import json
+    import os
+    # Load terminals from JSON file
+    terminals_path = os.path.join(os.path.dirname(__file__), 'data', 'ferry_terminals.json')
+    with open(terminals_path, 'r') as f:
+        terminals = json.load(f)
     # Geocode address
     geo_url = "https://maps.googleapis.com/maps/api/geocode/json"
     geo_params = {"address": address, "key": google_api_key}
@@ -68,17 +73,8 @@ def find_nearby_ferry_terminals(address: str, max_results: int = 3) -> dict:
     except (KeyError, IndexError):
         return {"terminals": [], "error": f"Could not geocode address: {address}"}
 
-    # Helper: Haversine formula
-    from math import radians, cos, sin, sqrt, atan2
-    def haversine(lat1, lon1, lat2, lon2):
-        R = 6371  # Earth radius in km
-        dlat = radians(lat2 - lat1)
-        dlon = radians(lon2 - lon1)
-        a = sin(dlat/2)**2 + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlon/2)**2
-        c = 2 * atan2(sqrt(a), sqrt(1-a))
-        return R * c
-
     # Compute distances
+    from utilities import haversine
     results = []
     for t in terminals:
         try:

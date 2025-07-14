@@ -9,3 +9,7 @@ wheels/
 
 # Virtual environments
 .venv
+
+# Misc
+.DS_Store
+uv.lock

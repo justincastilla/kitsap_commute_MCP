@@ -1,7 +1,20 @@
 import os
 import json
 from datetime import datetime
+from math import radians, cos, sin, sqrt, atan2
 
+
+def haversine(lat1, lon1, lat2, lon2):
+    """
+    Calculate the great-circle distance between two points on the Earth using the Haversine formula.
+    Returns distance in kilometers.
+    """
+    R = 6371  # Earth radius in km
+    dlat = radians(lat2 - lat1)
+    dlon = radians(lon2 - lon1)
+    a = sin(dlat/2)**2 + cos(radians(lat1)) * cos(radians(lat2)) * sin(dlon/2)**2
+    c = 2 * atan2(sqrt(a), sqrt(1-a))
+    return R * c
 
 
 def get_day_type(event_time):
@@ -31,7 +44,7 @@ def parse_datetime(dt: str | None) -> datetime | None:
         return None
 
 def get_schedule(): 
-    path = os.path.join(os.path.dirname(__file__), 'static_ferry_schedules.json')
+    path = os.path.join(os.path.dirname(__file__), 'data', 'static_ferry_schedules.json')
     with open(path, 'r') as f:
         content = f.read()
         content = '\n'.join([line for line in content.splitlines() if not line.strip().startswith('//')])

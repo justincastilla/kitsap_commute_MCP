@@ -1,4 +1,4 @@
-terminals = [
+[
   {
     "name": "Bremerton",
     "display_name": "Bremerton (Downtown)",
@@ -9,7 +9,7 @@ terminals = [
     "city": "Bremerton",
     "neighborhood": "Downtown ",
     "county": "Kitsap"
-  },    
+  },
   {
     "name": "Southworth",
     "display_name": "Southworth (Port Orchard)",
