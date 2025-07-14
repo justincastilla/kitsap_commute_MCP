@@ -41,26 +41,31 @@ source .venv/bin/activate
 
 #### d. (Alternative) Install from requirements.txt
 If you prefer, you can also install from `requirements.txt`:
-```bash
-uv pip install -r requirements.txt
-```
-
 - If you don't have uv installed, follow the instructions at https://github.com/astral-sh/uv
 
-### 3. Run the servers
-- Start the commute server:
+### 3. Install dependencies and run the servers
+
+This project uses [uv](https://github.com/astral-sh/uv) for dependency management and running servers. There is **no requirements.txt** file; all dependencies are managed via `pyproject.toml`.
+
+- To install dependencies:
 ```bash
-python commute_server.py
+uv sync
 ```
-- Start the Elasticsearch event server (in a separate terminal):
+
+- To start the commute server **or** Elasticsearch event server (in separate terminals):
 ```bash
-python elasticsearch_server.py
-```
+uv run fastmcp run <server_file.py>```
+
+This is the standard way to run any server in this project.
 
 ### 4. Connect with Claude Desktop
 - Ensure your `.env` file contains `CLAUDE_DESKTOP_API_KEY`.
-- In Claude Desktop, add the MCP server URLs (e.g., `http://localhost:8000` for commute, `http://localhost:8001` for events) in the integrations/settings panel.
-- Make sure Claude Desktop is running and can reach your local MCP servers.
+- To install and connect Claude Desktop to your MCP server, run:
+```bash
+fastmcp install claude-desktop <server_file.py>
+```
+- This will set up integration and ensure Claude Desktop can reach your local MCP servers.
+- You may need to inspect your Claude Desktop config.json file to ensure the correct server commands are set.
 
 ---
 
