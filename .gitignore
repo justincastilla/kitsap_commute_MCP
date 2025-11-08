@@ -14,3 +14,6 @@ wheels/
 .DS_Store
 uv.lock
 .windsurf
+
+# Ferry API cache
+data/ferry_cache/
