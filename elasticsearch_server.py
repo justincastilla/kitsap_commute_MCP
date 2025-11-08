@@ -2,11 +2,18 @@
 MCP server for Elasticsearch-backed event search and semantic event queries.
 This server exposes tools for searching, filtering, and semantically matching events stored in Elasticsearch.
 """
+
 from fastmcp import FastMCP
 from elasticsearch import Elasticsearch
-from config import ELASTIC_ENDPOINT, ELASTIC_API_KEY, EVENT_INDEX, INFERENCE_ENDPOINT_ID, PIPELINE_ID
+from config import (
+    ELASTIC_ENDPOINT,
+    ELASTIC_API_KEY,
+    EVENT_INDEX,
+    PIPELINE_ID,
+)
 
 import logging
+
 logging.basicConfig(level=logging.INFO)
 
 es = Elasticsearch(hosts=ELASTIC_ENDPOINT, api_key=ELASTIC_API_KEY)
@@ -16,9 +23,10 @@ mcp = FastMCP(
     name="Elasticsearch Server",
 )
 
+
 @mcp.tool(
     name="search_events",
-    description="Search events by time range, topic, title, location, or semantic description. Returns a list of matching event docs."
+    description="Search events by time range, topic, title, location, or semantic description. Returns a list of matching event docs.",
 )
 def search_events(
     start_time: str = None,
@@ -28,10 +36,11 @@ def search_events(
     location: str = None,
     description_query: str = None,
     presenting: bool = None,
-    top_k: int = 10
+    top_k: int = 10,
 ) -> dict:
     """
     Search for events in Elasticsearch using structured and/or semantic filters.
+    Search by both description_query and topic for maximum relevance.
     """
     must = []
     if start_time and end_time:
@@ -55,44 +64,47 @@ def search_events(
                             "query": {
                                 "multi_match": {
                                     "query": description_query,
-                                    "fields": ["title", "description", "topic"]
+                                    "fields": ["title", "description", "topic"],
                                 }
                             }
                         }
                     },
                     {
-                        "knn": {
-                            "field": "description_vector",
-                            "query_vector_builder": {
-                                "text_embedding": {
-                                    "model_id": INFERENCE_ENDPOINT_ID,
-                                    "model_text": description_query
+                        "standard": {
+                            "query": {
+                                "semantic": {
+                                    "field": "description_vector",
+                                    "query": description_query,
                                 }
-                            },
-                            "k": top_k,
-                            "num_candidates": 3 * top_k
+                            }
                         }
-                    }
+                    },
                 ],
                 "rank_window_size": top_k,
-                "rank_constant": 20
+                "rank_constant": 20,
             }
         }
         resp = es.search(
             index=EVENT_INDEX,
             retriever=retriever,
             size=top_k,
-            _source={"excludes": ["description_vector"]}
+            _source={"excludes": ["description_vector"]},
         )
     else:
         query = {"bool": {"must": must}} if must else {"match_all": {}}
-        resp = es.search(index=EVENT_INDEX, query=query, size=top_k, _source={"excludes": ["description_vector"]})
+        resp = es.search(
+            index=EVENT_INDEX,
+            query=query,
+            size=top_k,
+            _source={"excludes": ["description_vector"]},
+        )
     events = [hit["_source"] for hit in resp["hits"]["hits"]]
     return {"events": events}
 
+
 @mcp.tool(
     name="create_event",
-    description="Create a new event in Elasticsearch. Requires title, description, location, topic, start_time, end_time, url, presenting (bool), and talk_title."
+    description="Create a new event in Elasticsearch. Requires title, description, location, topic, start_time, end_time, url, presenting (bool), and talk_title.",
 )
 def create_event(
     title: str,
@@ -103,7 +115,7 @@ def create_event(
     end_time: str,
     url: str = None,
     presenting: bool = False,
-    talk_title: str = None
+    talk_title: str = None,
 ) -> dict:
     """
     Create a new event in Elasticsearch. Embeds the description for semantic search (placeholder embedding).
@@ -122,6 +134,7 @@ def create_event(
     }
     resp = es.index(index=EVENT_INDEX, document=event_doc, pipeline=PIPELINE_ID)
     return {"event_id": resp["_id"], "event": event_doc}
+
 
 if __name__ == "__main__":
     mcp.run()
