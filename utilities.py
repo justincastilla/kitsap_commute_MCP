@@ -1,7 +1,7 @@
-import os
 import json
 from datetime import datetime
 from math import radians, cos, sin, sqrt, atan2
+from config import DATA_DIR
 
 
 def haversine(lat1, lon1, lat2, lon2):
@@ -43,8 +43,8 @@ def parse_datetime(dt: str | None) -> datetime | None:
     except Exception:
         return None
 
-def get_schedule(): 
-    path = os.path.join(os.path.dirname(__file__), 'data', 'static_ferry_schedules.json')
+def get_schedule():
+    path = DATA_DIR / 'ferry_schedules.json'
     with open(path, 'r') as f:
         content = f.read()
         content = '\n'.join([line for line in content.splitlines() if not line.strip().startswith('//')])

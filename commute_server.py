@@ -1,18 +1,10 @@
-import os
 import json
 import requests
 import fastmcp
+from config import WSDOT_API_KEY, GOOGLE_MAPS_API_KEY, DATA_DIR
 from utilities import get_schedule, get_day_type, to_epoch_seconds, parse_datetime
 from datetime import datetime
 from typing import Optional
-
-wdot_api_key = os.getenv('WSDOT_API_KEY')
-if not wdot_api_key:
-    raise Exception("WSDOT_API_KEY environment variable not set")
-
-google_api_key = os.getenv('GOOGLE_MAPS_API_KEY')
-if not google_api_key:
-    raise Exception("GOOGLE_MAPS_API_KEY environment variable not set")
 
 mcp = fastmcp.FastMCP("commute-server")
 
@@ -40,8 +32,8 @@ def fetch_ferry_schedules(direction: str | None = None) -> dict:
     description="List of ferry terminals")
 def fetch_terminals():
     url = 'https://wsdot.wa.gov/Ferries/API/Terminals/rest/terminalbasics'
-    params = {'apiaccesscode': wdot_api_key}
-    resp = requests.get(url, params=params)
+    params = {'apiaccesscode': WSDOT_API_KEY}
+    resp = requests.get(url, params=params, timeout=10)
     resp.raise_for_status()
     data = resp.json()
     return data
@@ -55,16 +47,14 @@ def find_nearby_ferry_terminals(address: str, max_results: int = 3) -> dict:
     Finds the nearest ferry terminals to a given address using a static terminal list and Google Maps Geocoding API.
     Returns a sorted list of the closest terminals with name, address, lat, lng, place_id, and distance_km.
     """
-    import json
-    import os
     # Load terminals from JSON file
-    terminals_path = os.path.join(os.path.dirname(__file__), 'data', 'ferry_terminals.json')
+    terminals_path = DATA_DIR / 'ferry_terminals.json'
     with open(terminals_path, 'r') as f:
         terminals = json.load(f)
     # Geocode address
     geo_url = "https://maps.googleapis.com/maps/api/geocode/json"
-    geo_params = {"address": address, "key": google_api_key}
-    geo_resp = requests.get(geo_url, params=geo_params)
+    geo_params = {"address": address, "key": GOOGLE_MAPS_API_KEY}
+    geo_resp = requests.get(geo_url, params=geo_params, timeout=10)
     geo_resp.raise_for_status()
     geo_data = geo_resp.json()
     try:
@@ -115,14 +105,14 @@ def drive_time_tool(
     dep = parse_datetime(departure_time)
     arr = parse_datetime(arrival_time)
     url = "https://maps.googleapis.com/maps/api/directions/json"
-    params = {"origin": origin, "destination": destination, "key": google_api_key}
+    params = {"origin": origin, "destination": destination, "key": GOOGLE_MAPS_API_KEY}
 
     if arr is not None:
         params['arrival_time'] = to_epoch_seconds(arr)
     elif dep is not None:
         params['departure_time'] = to_epoch_seconds(dep)
 
-    resp = requests.get(url, params=params)
+    resp = requests.get(url, params=params, timeout=10)
     resp.raise_for_status()
     data = resp.json()
     try:
@@ -199,8 +189,8 @@ def geocode_county(address: str) -> dict:
     Returns the county for a given address using the Google Maps Geocoding API.
     """
     url = "https://maps.googleapis.com/maps/api/geocode/json"
-    params = {"address": address, "key": google_api_key}
-    resp = requests.get(url, params=params)
+    params = {"address": address, "key": GOOGLE_MAPS_API_KEY}
+    resp = requests.get(url, params=params, timeout=10)
     resp.raise_for_status()
     data = resp.json()
     try:

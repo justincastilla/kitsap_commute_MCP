@@ -5,6 +5,28 @@ A Python-based app to help Kitsap County residents plan commutes and manage even
 ## Main Components
 - `commute_server.py`: MCP server for commute and ferry options
 - `elasticsearch_server.py`: MCP server for event storage, search, and recommendations
+- `config.py`: Centralized configuration management
+- `setup/`: One-time Elasticsearch setup scripts
+- `data/`: Reference data and sample events
+
+## Project Structure
+
+```
+kitsap_commute_MCP/
+├── commute_server.py          # MCP server for ferry & commute planning
+├── elasticsearch_server.py    # MCP server for event search
+├── utilities.py               # Shared utility functions
+├── config.py                  # Centralized configuration
+│
+├── data/                      # Reference and sample data
+│   ├── README.md              # Documentation for data files
+│   ├── ferry_terminals.json   # Ferry terminal locations
+│   ├── ferry_schedules.json   # Static ferry schedules
+│   └── sample_events.json     # Sample events for testing
+│
+└── setup/                     # One-time setup scripts
+    └── elasticsearch_setup.py # Elasticsearch initialization
+```
 
 ## Getting Started
 
@@ -39,15 +61,31 @@ uv venv .venv
 source .venv/bin/activate
 ```
 
-### 3. Start the servers
+### 3. Set up Elasticsearch (First Time Only)
 
-- To start the commute server **or** Elasticsearch event server (in separate terminals):
+Before running the Elasticsearch server, you need to set up the index, inference endpoint, and pipeline:
+
 ```bash
-uv run fastmcp run <server_file.py>```
+# Run all setup steps at once
+python setup/elasticsearch_setup.py --all
+
+# Or run steps individually:
+python setup/elasticsearch_setup.py --create-index
+python setup/elasticsearch_setup.py --create-endpoint
+python setup/elasticsearch_setup.py --create-pipeline
+python setup/elasticsearch_setup.py --load-sample-data
+```
+
+### 4. Start the servers
+
+To start the commute server **or** Elasticsearch event server (in separate terminals):
+```bash
+uv run fastmcp run <server_file.py>
+```
 
 This is the standard way to run any server in this project.
 
-### 4. Connect with Claude Desktop
+### 5. Connect with Claude Desktop
 - Ensure your `.env` file contains `CLAUDE_DESKTOP_API_KEY`.
 - To install and connect Claude Desktop to your MCP server, run:
 ```bash
