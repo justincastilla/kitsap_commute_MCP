@@ -17,3 +17,6 @@ uv.lock
 
 # Ferry API cache
 data/ferry_cache/
+
+# Ferry schedule backups
+data/static_ferry_schedules_backup_*.json

@@ -345,6 +345,30 @@ class FerryAPIClient:
 
     # ==================== SCHEDULE API ====================
 
+    def get_active_seasons(self, cache: bool = True) -> List[Dict[str, Any]]:
+        """
+        Get active ferry schedule seasons
+
+        Args:
+            cache: Whether to save/load from cache
+
+        Returns:
+            List of active seasons with date ranges
+        """
+        cache_file = 'active_seasons.json'
+
+        if cache:
+            cached_data = self._load_from_cache(cache_file)
+            if cached_data:
+                return cached_data
+
+        data = self._make_request('schedule', 'activeseasons')
+
+        if cache:
+            self._save_to_cache(cache_file, data)
+
+        return data
+
     def get_schedule_date_range(self, cache: bool = True) -> Dict[str, Any]:
         """
         Get the valid date range for which schedule data is available
