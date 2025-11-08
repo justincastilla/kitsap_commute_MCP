@@ -5,12 +5,7 @@ This server exposes tools for searching, filtering, and semantically matching ev
 
 from fastmcp import FastMCP
 from elasticsearch import Elasticsearch
-from config import (
-    ELASTIC_ENDPOINT,
-    ELASTIC_API_KEY,
-    EVENT_INDEX,
-    PIPELINE_ID,
-)
+from config import ELASTIC_ENDPOINT, ELASTIC_API_KEY, EVENT_INDEX
 
 import logging
 
@@ -118,7 +113,8 @@ def create_event(
     talk_title: str = None,
 ) -> dict:
     """
-    Create a new event in Elasticsearch. Embeds the description for semantic search (placeholder embedding).
+    Create a new event in Elasticsearch. The description is copied to description_vector
+    which automatically generates semantic embeddings using the semantic_text field type.
     """
 
     event_doc = {
@@ -132,7 +128,7 @@ def create_event(
         "presenting": presenting,
         "talk_title": talk_title,
     }
-    resp = es.index(index=EVENT_INDEX, document=event_doc, pipeline=PIPELINE_ID)
+    resp = es.index(index=EVENT_INDEX, document=event_doc)
     return {"event_id": resp["_id"], "event": event_doc}
 
 

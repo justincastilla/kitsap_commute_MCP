@@ -44,7 +44,7 @@ def create_event_index():
         "mappings": {
             "properties": {
                 "title": {"type": "text"},
-                "description": {"type": "text"},
+                "description": {"type": "text", "copy_to": "description_vector"},
                 "description_vector": {"type": "semantic_text"},
                 "location": {"type": "text"},
                 "topic": {"type": "keyword"},
@@ -72,7 +72,7 @@ def bulk_index_events(events):
     Bulk index an array of event documents into the events index.
     Each event should be a dict matching the event schema.
     Uses the _bulk API for efficient ingestion.
-    Semantic embeddings are generated automatically by the semantic_text field.
+    The description field is automatically copied to description_vector via copy_to in the index mapping.
 
     Args:
         events (list): List of event dictionaries to index
