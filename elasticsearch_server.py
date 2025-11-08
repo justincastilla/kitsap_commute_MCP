@@ -2,20 +2,12 @@
 MCP server for Elasticsearch-backed event search and semantic event queries.
 This server exposes tools for searching, filtering, and semantically matching events stored in Elasticsearch.
 """
-import os
 from fastmcp import FastMCP
 from elasticsearch import Elasticsearch
-from dotenv import load_dotenv
-
-load_dotenv()
+from config import ELASTIC_ENDPOINT, ELASTIC_API_KEY, EVENT_INDEX, INFERENCE_ENDPOINT_ID, PIPELINE_ID
 
 import logging
 logging.basicConfig(level=logging.INFO)
-
-ELASTIC_ENDPOINT = os.getenv("ELASTIC_ENDPOINT", "http://localhost:9200")
-ELASTIC_API_KEY = os.getenv("ELASTIC_API_KEY")
-EVENT_INDEX = os.getenv("EVENT_INDEX", "events")
-
 
 es = Elasticsearch(hosts=ELASTIC_ENDPOINT, api_key=ELASTIC_API_KEY)
 
@@ -71,10 +63,9 @@ def search_events(
                     {
                         "knn": {
                             "field": "description_vector",
-                            # You will need to generate the embedding for the query here. For now, use the query_vector_builder if supported, or insert the vector if you have it.
                             "query_vector_builder": {
                                 "text_embedding": {
-                                    "model_id": "e5_event_description",
+                                    "model_id": INFERENCE_ENDPOINT_ID,
                                     "model_text": description_query
                                 }
                             },
@@ -129,7 +120,7 @@ def create_event(
         "presenting": presenting,
         "talk_title": talk_title,
     }
-    resp = es.index(index=EVENT_INDEX, document=event_doc, pipeline="event-description-embed-pipeline")
+    resp = es.index(index=EVENT_INDEX, document=event_doc, pipeline=PIPELINE_ID)
     return {"event_id": resp["_id"], "event": event_doc}
 
 if __name__ == "__main__":

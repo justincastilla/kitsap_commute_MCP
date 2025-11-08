@@ -9,8 +9,20 @@ wheels/
 
 # Virtual environments
 .venv
+venv/
+ENV/
+env/
+
+# UV/pyenv (no longer used - Docker only)
+uv.lock
+pyproject.toml
 
 # Misc
 .DS_Store
-uv.lock
 .windsurf
+*.log
+
+# Testing
+test_reorganization.sh
+.pytest_cache/
+.coverage

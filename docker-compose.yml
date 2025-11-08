@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  # Commute MCP Server
+  commute-server:
+    build: .
+    container_name: kitsap-commute-server
+    env_file:
+      - .env
+    stdin_open: true
+    tty: true
+    command: ["python", "commute_server.py"]
+    ports:
+      - "8000:8000"
+
+  # Elasticsearch Event MCP Server
+  elasticsearch-server:
+    build: .
+    container_name: kitsap-elasticsearch-server
+    env_file:
+      - .env
+    stdin_open: true
+    tty: true
+    command: ["python", "elasticsearch_server.py"]
+    ports:
+      - "8001:8001"
