@@ -20,3 +20,6 @@ data/ferry_cache/
 
 # Ferry schedule backups
 data/static_ferry_schedules_backup_*.json
+
+# Ferry API exploration results
+ferry_api_exploration_results.json
